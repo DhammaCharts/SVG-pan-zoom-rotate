@@ -72,13 +72,13 @@ window.addEventListener("contextmenu", function(event) {
 
 //
 // ON WHEEL
-// =========================================================================== 
+// ===========================================================================
 function onWheel(event) {
   event.preventDefault();
-  
+
   pivotAnimation.reverse();
-  
-  var normalized;  
+
+  var normalized;
   var delta = event.wheelDelta;
 
   if (delta) {
@@ -87,14 +87,14 @@ function onWheel(event) {
     delta = event.deltaY || event.detail || 0;
     normalized = -(delta % 3 ? delta * 10 : delta / 3);
   }
-  
+
   var scaleDelta = normalized > 0 ? 1 / zoom.scaleFactor : zoom.scaleFactor;
-  
+
   point.x = event.clientX;
   point.y = event.clientY;
-  
+
   var startPoint = point.matrixTransform(svg.getScreenCTM().inverse());
-    
+
   var fromVars = {
     ease: zoom.ease,
     x: viewBox.x,
@@ -102,53 +102,53 @@ function onWheel(event) {
     width: viewBox.width,
     height: viewBox.height,
   };
-  
+
   viewBox.x -= (startPoint.x - viewBox.x) * (scaleDelta - 1);
   viewBox.y -= (startPoint.y - viewBox.y) * (scaleDelta - 1);
   viewBox.width *= scaleDelta;
   viewBox.height *= scaleDelta;
-    
-  zoom.animation = TweenLite.from(viewBox, zoom.duration, fromVars);  
+
+  zoom.animation = TweenLite.from(viewBox, zoom.duration, fromVars);
 }
 
 //
 // SELECT DRAGGABLE
-// =========================================================================== 
+// ===========================================================================
 function selectDraggable(event) {
-   
+
   if (resetAnimation.isActive()) {
     resetAnimation.kill();
   }
-    
+
   startClient.x = this.pointerX;
   startClient.y = this.pointerY;
   startGlobal = startClient.matrixTransform(svg.getScreenCTM().inverse());
-  
+
   // Right mouse button
   if (event.button === 2) {
-    
+
     reachedThreshold = false;
-    
-    TweenLite.set(viewport, { 
+
+    TweenLite.set(viewport, {
       svgOrigin: startGlobal.x + " " + startGlobal.y
     });
-    
-    TweenLite.set(pivot, { 
-      x: this.pointerX, 
+
+    TweenLite.set(pivot, {
+      x: this.pointerX,
       y: this.pointerY
     });
-       
+
     pannable.disable();
     rotatable.enable().update().startDrag(event);
     pivotAnimation.play(0);
-    
+
   } else {
-    
-    TweenLite.set(proxy, { 
-      x: this.pointerX, 
+
+    TweenLite.set(proxy, {
+      x: this.pointerX,
       y: this.pointerY
     });
-    
+
     rotatable.disable();
     pannable.enable().update().startDrag(event);
     pivotAnimation.reverse();
@@ -157,22 +157,22 @@ function selectDraggable(event) {
 
 //
 // RESET VIEWPORT
-// =========================================================================== 
+// ===========================================================================
 function resetViewport() {
-    
+
   var duration = 0.8;
   var ease = Power3.easeOut;
-  
+
   pivotAnimation.reverse();
-  
+
   if (pannable.tween) {
     pannable.tween.kill();
   }
-  
+
   if (rotatable.tween) {
     rotatable.tween.kill();
   }
-    
+
   resetAnimation.clear()
     .to(viewBox, duration, {
       x: cachedViewBox.x,
@@ -192,38 +192,38 @@ function resetViewport() {
 
 //
 // CHECK THRESHOLD
-// =========================================================================== 
+// ===========================================================================
 function checkThreshold(value) {
-  
+
   if (reachedThreshold) {
     return value;
   }
-  
+
   var dx = Math.abs(this.pointerX - startClient.x);
   var dy = Math.abs(this.pointerY - startClient.y);
-  
+
   if (dx > rotateThreshold || dy > rotateThreshold || this.isThrowing) {
     reachedThreshold = true;
     return value;
   }
-    
+
   return this.rotation;
 }
 
 //
 // UPDATE VIEWBOX
-// =========================================================================== 
+// ===========================================================================
 function updateViewBox() {
-  
+
   if (zoom.animation.isActive()) {
     return;
   }
-  
+
   point.x = this.x;
   point.y = this.y;
-  
+
   var moveGlobal = point.matrixTransform(svg.getScreenCTM().inverse());
-    
+
   viewBox.x -= (moveGlobal.x - startGlobal.x);
-  viewBox.y -= (moveGlobal.y - startGlobal.y); 
+  viewBox.y -= (moveGlobal.y - startGlobal.y);
 }
